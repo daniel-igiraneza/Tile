@@ -1,10 +1,10 @@
-"use client"
+"use frontend";
 
-import { useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
-import styled from "styled-components"
-import { useAuth } from "../../context/AuthContext"
-import Button from "../common/Button"
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import styled from "styled-components";
+import { useAuth } from "../../context/AuthContext";
+import Button from "../common/Button";
 
 const NavbarContainer = styled.nav`
   display: flex;
@@ -16,13 +16,13 @@ const NavbarContainer = styled.nav`
   position: sticky;
   top: 0;
   z-index: 100;
-`
+`;
 
 const Logo = styled(Link)`
   font-size: 1.5rem;
   font-weight: 700;
   color: ${(props) => props.theme.colors.primary};
-`
+`;
 
 const NavLinks = styled.div`
   display: flex;
@@ -40,7 +40,7 @@ const NavLinks = styled.div`
     padding: 1rem;
     box-shadow: ${(props) => props.theme.shadows.small};
   }
-`
+`;
 
 const NavLink = styled(Link)`
   color: ${(props) => props.theme.colors.text};
@@ -50,7 +50,7 @@ const NavLink = styled(Link)`
   &:hover {
     color: ${(props) => props.theme.colors.primary};
   }
-`
+`;
 
 const MobileMenuButton = styled.button`
   display: none;
@@ -62,12 +62,12 @@ const MobileMenuButton = styled.button`
   @media (max-width: ${(props) => props.theme.breakpoints.tablet}) {
     display: block;
   }
-`
+`;
 
 const UserMenu = styled.div`
   position: relative;
   display: inline-block;
-`
+`;
 
 const UserButton = styled.button`
   background: none;
@@ -77,7 +77,7 @@ const UserButton = styled.button`
   gap: 0.5rem;
   cursor: pointer;
   font-weight: 500;
-`
+`;
 
 const UserMenuDropdown = styled.div`
   position: absolute;
@@ -89,7 +89,7 @@ const UserMenuDropdown = styled.div`
   min-width: 150px;
   z-index: 10;
   display: ${(props) => (props.isOpen ? "block" : "none")};
-`
+`;
 
 const DropdownItem = styled(Link)`
   display: block;
@@ -100,7 +100,7 @@ const DropdownItem = styled(Link)`
   &:hover {
     background-color: ${(props) => props.theme.colors.background};
   }
-`
+`;
 
 const DropdownButton = styled.button`
   display: block;
@@ -116,24 +116,26 @@ const DropdownButton = styled.button`
   &:hover {
     background-color: ${(props) => props.theme.colors.background};
   }
-`
+`;
 
 const Navbar = () => {
-  const { currentUser, logout, isAdmin } = useAuth()
-  const navigate = useNavigate()
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const { currentUser, logout, isAdmin } = useAuth();
+  const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const handleLogout = () => {
-    logout()
-    navigate("/login")
-  }
+    logout();
+    navigate("/login");
+  };
 
   return (
     <NavbarContainer>
       <Logo to="/">TileCalc</Logo>
 
-      <MobileMenuButton onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>☰</MobileMenuButton>
+      <MobileMenuButton onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+        ☰
+      </MobileMenuButton>
 
       <NavLinks isOpen={mobileMenuOpen}>
         <NavLink to="/">Home</NavLink>
@@ -146,7 +148,9 @@ const Navbar = () => {
             {isAdmin && <NavLink to="/admin">Admin</NavLink>}
 
             <UserMenu>
-              <UserButton onClick={() => setUserMenuOpen(!userMenuOpen)}>{currentUser.name} ▼</UserButton>
+              <UserButton onClick={() => setUserMenuOpen(!userMenuOpen)}>
+                {currentUser.name} ▼
+              </UserButton>
 
               <UserMenuDropdown isOpen={userMenuOpen}>
                 <DropdownItem to="/profile">Profile</DropdownItem>
@@ -164,7 +168,7 @@ const Navbar = () => {
         )}
       </NavLinks>
     </NavbarContainer>
-  )
-}
+  );
+};
 
-export default Navbar
+export default Navbar;

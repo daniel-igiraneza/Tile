@@ -1,33 +1,33 @@
-"use client"
+"use frontend";
 
-import { useState, useEffect, useRef } from "react"
-import { useParams, Link } from "react-router-dom"
-import styled from "styled-components"
-import Layout from "../components/layout/Layout"
-import Card from "../components/common/Card"
-import Button from "../components/common/Button"
+import { useState, useEffect, useRef } from "react";
+import { useParams, Link } from "react-router-dom";
+import styled from "styled-components";
+import Layout from "../components/layout/Layout";
+import Card from "../components/common/Card";
+import Button from "../components/common/Button";
 
 const LayoutContainer = styled.div`
   max-width: 1000px;
   margin: 0 auto;
-`
+`;
 
 const PageHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
-`
+`;
 
 const PageTitle = styled.h1`
   font-size: 2rem;
-`
+`;
 
 const LayoutControls = styled.div`
   display: flex;
   gap: 1rem;
   margin-bottom: 1.5rem;
-`
+`;
 
 const CanvasContainer = styled.div`
   background-color: white;
@@ -35,63 +35,63 @@ const CanvasContainer = styled.div`
   box-shadow: ${(props) => props.theme.shadows.small};
   overflow: hidden;
   margin-bottom: 2rem;
-`
+`;
 
 const Canvas = styled.canvas`
   width: 100%;
   height: auto;
   display: block;
-`
+`;
 
 const DetailsContainer = styled.div`
   display: grid;
   grid-template-columns: 1fr;
   gap: 1.5rem;
-  
+
   @media (min-width: ${(props) => props.theme.breakpoints.tablet}) {
     grid-template-columns: 2fr 1fr;
   }
-`
+`;
 
 const DetailsList = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 1rem;
-`
+`;
 
 const DetailItem = styled.div`
   background-color: ${(props) => props.theme.colors.background};
   padding: 1rem;
   border-radius: ${(props) => props.theme.borderRadius.medium};
-`
+`;
 
 const DetailLabel = styled.div`
   font-size: 0.875rem;
   color: ${(props) => props.theme.colors.lightText};
   margin-bottom: 0.25rem;
-`
+`;
 
 const DetailValue = styled.div`
   font-size: 1.25rem;
   font-weight: 600;
-`
+`;
 
 const LegendContainer = styled.div`
   padding: 1rem;
   background-color: ${(props) => props.theme.colors.background};
   border-radius: ${(props) => props.theme.borderRadius.medium};
-`
+`;
 
 const LegendTitle = styled.h3`
   font-size: 1.25rem;
   margin-bottom: 1rem;
-`
+`;
 
 const LegendItem = styled.div`
   display: flex;
   align-items: center;
   margin-bottom: 0.75rem;
-`
+`;
 
 const LegendColor = styled.div`
   width: 20px;
@@ -100,17 +100,17 @@ const LegendColor = styled.div`
   border-radius: 4px;
   background-color: ${(props) => props.color};
   border: ${(props) => (props.border ? `1px solid ${props.border}` : "none")};
-`
+`;
 
 const LegendText = styled.div`
   font-size: 0.9rem;
-`
+`;
 
 const TileLayout = () => {
-  const { calculationId } = useParams()
-  const [calculation, setCalculation] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const canvasRef = useRef(null)
+  const { calculationId } = useParams();
+  const [calculation, setCalculation] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const canvasRef = useRef(null);
 
   useEffect(() => {
     const fetchCalculation = async () => {
@@ -140,128 +140,130 @@ const TileLayout = () => {
             tilesAlongLength: 19,
             tilesAlongWidth: 14,
           },
-        }
+        };
 
-        setCalculation(mockCalculation)
+        setCalculation(mockCalculation);
       } catch (error) {
-        console.error("Error fetching calculation:", error)
+        console.error("Error fetching calculation:", error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchCalculation()
-  }, [calculationId])
+    fetchCalculation();
+  }, [calculationId]);
 
   useEffect(() => {
     if (calculation && canvasRef.current) {
-      drawTileLayout()
+      drawTileLayout();
     }
-  }, [calculation])
+  }, [calculation]);
 
   const drawTileLayout = () => {
-    const canvas = canvasRef.current
-    const ctx = canvas.getContext("2d")
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
 
     // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    if (!calculation) return
+    if (!calculation) return;
 
     // Set canvas dimensions based on room dimensions
     // We'll scale the room to fit the canvas while maintaining aspect ratio
-    const roomLength = calculation.roomLength
-    const roomWidth = calculation.roomWidth
-    const aspectRatio = roomLength / roomWidth
+    const roomLength = calculation.roomLength;
+    const roomWidth = calculation.roomWidth;
+    const aspectRatio = roomLength / roomWidth;
 
     // Set canvas size
-    const maxWidth = 800
-    const maxHeight = 600
+    const maxWidth = 800;
+    const maxHeight = 600;
 
-    let canvasWidth, canvasHeight
+    let canvasWidth, canvasHeight;
 
     if (aspectRatio > maxWidth / maxHeight) {
-      canvasWidth = maxWidth
-      canvasHeight = maxWidth / aspectRatio
+      canvasWidth = maxWidth;
+      canvasHeight = maxWidth / aspectRatio;
     } else {
-      canvasHeight = maxHeight
-      canvasWidth = maxHeight * aspectRatio
+      canvasHeight = maxHeight;
+      canvasWidth = maxHeight * aspectRatio;
     }
 
-    canvas.width = canvasWidth
-    canvas.height = canvasHeight
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
 
     // Calculate tile dimensions in canvas units
-    const tileLength = (calculation.tileLength / 100) * (canvasWidth / roomLength)
-    const tileWidth = (calculation.tileWidth / 100) * (canvasHeight / roomWidth)
-    const spacing = (calculation.spacing / 1000) * (canvasWidth / roomLength)
+    const tileLength =
+      (calculation.tileLength / 100) * (canvasWidth / roomLength);
+    const tileWidth =
+      (calculation.tileWidth / 100) * (canvasHeight / roomWidth);
+    const spacing = (calculation.spacing / 1000) * (canvasWidth / roomLength);
 
     // Draw room background
-    ctx.fillStyle = "#f5f5f5"
-    ctx.fillRect(0, 0, canvasWidth, canvasHeight)
+    ctx.fillStyle = "#f5f5f5";
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
     // Draw tiles
-    const tilesAlongLength = calculation.results.tilesAlongLength
-    const tilesAlongWidth = calculation.results.tilesAlongWidth
+    const tilesAlongLength = calculation.results.tilesAlongLength;
+    const tilesAlongWidth = calculation.results.tilesAlongWidth;
 
     for (let i = 0; i < tilesAlongLength; i++) {
       for (let j = 0; j < tilesAlongWidth; j++) {
-        const x = i * (tileLength + spacing)
-        const y = j * (tileWidth + spacing)
+        const x = i * (tileLength + spacing);
+        const y = j * (tileWidth + spacing);
 
         // Determine if this is an edge or corner tile
-        const isLeftEdge = i === 0
-        const isRightEdge = i === tilesAlongLength - 1
-        const isTopEdge = j === 0
-        const isBottomEdge = j === tilesAlongWidth - 1
+        const isLeftEdge = i === 0;
+        const isRightEdge = i === tilesAlongLength - 1;
+        const isTopEdge = j === 0;
+        const isBottomEdge = j === tilesAlongWidth - 1;
 
         const isCorner =
           (isLeftEdge && isTopEdge) ||
           (isLeftEdge && isBottomEdge) ||
           (isRightEdge && isTopEdge) ||
-          (isRightEdge && isBottomEdge)
+          (isRightEdge && isBottomEdge);
 
-        const isEdge = isLeftEdge || isRightEdge || isTopEdge || isBottomEdge
+        const isEdge = isLeftEdge || isRightEdge || isTopEdge || isBottomEdge;
 
         // Set tile color based on type
         if (isCorner) {
-          ctx.fillStyle = "#ffcccc" // Light red for corner tiles
+          ctx.fillStyle = "#ffcccc"; // Light red for corner tiles
         } else if (isEdge) {
-          ctx.fillStyle = "#ffffcc" // Light yellow for edge tiles
+          ctx.fillStyle = "#ffffcc"; // Light yellow for edge tiles
         } else {
-          ctx.fillStyle = "#ffffff" // White for whole tiles
+          ctx.fillStyle = "#ffffff"; // White for whole tiles
         }
 
         // Draw tile
-        ctx.fillRect(x, y, tileLength, tileWidth)
+        ctx.fillRect(x, y, tileLength, tileWidth);
 
         // Draw tile border
-        ctx.strokeStyle = "#cccccc"
-        ctx.lineWidth = 1
-        ctx.strokeRect(x, y, tileLength, tileWidth)
+        ctx.strokeStyle = "#cccccc";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x, y, tileLength, tileWidth);
       }
     }
 
     // Draw room border
-    ctx.strokeStyle = "#333333"
-    ctx.lineWidth = 2
-    ctx.strokeRect(0, 0, canvasWidth, canvasHeight)
-  }
+    ctx.strokeStyle = "#333333";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(0, 0, canvasWidth, canvasHeight);
+  };
 
   const handleDownloadImage = () => {
-    const canvas = canvasRef.current
-    const image = canvas.toDataURL("image/png")
+    const canvas = canvasRef.current;
+    const image = canvas.toDataURL("image/png");
 
-    const link = document.createElement("a")
-    link.href = image
-    link.download = `${calculation.name}-tile-layout.png`
-    link.click()
-  }
+    const link = document.createElement("a");
+    link.href = image;
+    link.download = `${calculation.name}-tile-layout.png`;
+    link.click();
+  };
 
   const handleDownloadPDF = () => {
     // In a real app, you would generate a PDF with the layout and calculation details
-    alert("PDF generation would be implemented in a real application.")
-  }
+    alert("PDF generation would be implemented in a real application.");
+  };
 
   if (loading) {
     return (
@@ -270,7 +272,7 @@ const TileLayout = () => {
           <p>Loading tile layout...</p>
         </LayoutContainer>
       </Layout>
-    )
+    );
   }
 
   if (!calculation) {
@@ -283,7 +285,7 @@ const TileLayout = () => {
           </Button>
         </LayoutContainer>
       </Layout>
-    )
+    );
   }
 
   return (
@@ -331,7 +333,10 @@ const TileLayout = () => {
 
               <DetailItem>
                 <DetailLabel>Pattern</DetailLabel>
-                <DetailValue>{calculation.pattern.charAt(0).toUpperCase() + calculation.pattern.slice(1)}</DetailValue>
+                <DetailValue>
+                  {calculation.pattern.charAt(0).toUpperCase() +
+                    calculation.pattern.slice(1)}
+                </DetailValue>
               </DetailItem>
 
               <DetailItem>
@@ -351,7 +356,9 @@ const TileLayout = () => {
 
               <DetailItem>
                 <DetailLabel>With 10% Waste</DetailLabel>
-                <DetailValue>{calculation.results.totalTilesWithWaste}</DetailValue>
+                <DetailValue>
+                  {calculation.results.totalTilesWithWaste}
+                </DetailValue>
               </DetailItem>
             </DetailsList>
           </Card>
@@ -382,7 +389,7 @@ const TileLayout = () => {
         </DetailsContainer>
       </LayoutContainer>
     </Layout>
-  )
-}
+  );
+};
 
-export default TileLayout
+export default TileLayout;

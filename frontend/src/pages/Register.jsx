@@ -1,31 +1,31 @@
-"use client"
+"use frontend";
 
-import { useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
-import styled from "styled-components"
-import Layout from "../components/layout/Layout"
-import Card from "../components/common/Card"
-import Input from "../components/common/Input"
-import Select from "../components/common/Select"
-import Button from "../components/common/Button"
-import { useAuth } from "../context/AuthContext"
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import styled from "styled-components";
+import Layout from "../components/layout/Layout";
+import Card from "../components/common/Card";
+import Input from "../components/common/Input";
+import Select from "../components/common/Select";
+import Button from "../components/common/Button";
+import { useAuth } from "../context/AuthContext";
 
 const RegisterContainer = styled.div`
   max-width: 500px;
   margin: 2rem auto;
   width: 100%;
-`
+`;
 
 const FormTitle = styled.h2`
   text-align: center;
   margin-bottom: 2rem;
   font-size: 2rem;
-`
+`;
 
 const FormFooter = styled.div`
   margin-top: 1.5rem;
   text-align: center;
-`
+`;
 
 const ErrorAlert = styled.div`
   background-color: ${(props) => props.theme.colors.error}20;
@@ -33,7 +33,7 @@ const ErrorAlert = styled.div`
   padding: 1rem;
   border-radius: ${(props) => props.theme.borderRadius.medium};
   margin-bottom: 1.5rem;
-`
+`;
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -42,91 +42,94 @@ const Register = () => {
     password: "",
     confirmPassword: "",
     role: "",
-  })
-  const [formErrors, setFormErrors] = useState({})
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [registerError, setRegisterError] = useState("")
+  });
+  const [formErrors, setFormErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [registerError, setRegisterError] = useState("");
 
-  const { register } = useAuth()
-  const navigate = useNavigate()
+  const { register } = useAuth();
+  const navigate = useNavigate();
 
   const roleOptions = [
     { value: "engineer", label: "Engineer/Builder" },
     { value: "homeowner", label: "House Owner" },
     { value: "supplier", label: "Tile Supplier" },
     { value: "architect", label: "Architect" },
-  ]
+  ];
 
   const handleChange = (e) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: value,
-    })
+    });
 
     // Clear error when user types
     if (formErrors[name]) {
       setFormErrors({
         ...formErrors,
         [name]: "",
-      })
+      });
     }
-  }
+  };
 
   const validateForm = () => {
-    const errors = {}
+    const errors = {};
 
     if (!formData.name) {
-      errors.name = "Name is required"
+      errors.name = "Name is required";
     }
 
     if (!formData.email) {
-      errors.email = "Email is required"
+      errors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      errors.email = "Email is invalid"
+      errors.email = "Email is invalid";
     }
 
     if (!formData.password) {
-      errors.password = "Password is required"
+      errors.password = "Password is required";
     } else if (formData.password.length < 6) {
-      errors.password = "Password must be at least 6 characters"
+      errors.password = "Password must be at least 6 characters";
     }
 
     if (!formData.confirmPassword) {
-      errors.confirmPassword = "Please confirm your password"
+      errors.confirmPassword = "Please confirm your password";
     } else if (formData.password !== formData.confirmPassword) {
-      errors.confirmPassword = "Passwords do not match"
+      errors.confirmPassword = "Passwords do not match";
     }
 
     if (!formData.role) {
-      errors.role = "Please select your role"
+      errors.role = "Please select your role";
     }
 
-    setFormErrors(errors)
-    return Object.keys(errors).length === 0
-  }
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!validateForm()) {
-      return
+      return;
     }
 
-    setIsSubmitting(true)
-    setRegisterError("")
+    setIsSubmitting(true);
+    setRegisterError("");
 
     try {
       // Remove confirmPassword before sending to API
-      const { confirmPassword, ...userData } = formData
-      await register(userData)
-      navigate("/dashboard")
+      const { confirmPassword, ...userData } = formData;
+      await register(userData);
+      navigate("/dashboard");
     } catch (error) {
-      setRegisterError(error.response?.data?.message || "Registration failed. Please try again.")
+      setRegisterError(
+        error.response?.data?.message ||
+          "Registration failed. Please try again."
+      );
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <Layout>
@@ -202,7 +205,7 @@ const Register = () => {
         </Card>
       </RegisterContainer>
     </Layout>
-  )
-}
+  );
+};
 
-export default Register
+export default Register;

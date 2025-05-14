@@ -1,76 +1,76 @@
-"use client"
+"use frontend";
 
-import { createContext, useState, useEffect, useContext } from "react"
-import axios from "axios"
+import { createContext, useState, useEffect, useContext } from "react";
+import axios from "axios";
 
-const AuthContext = createContext()
+const AuthContext = createContext();
 
-export const useAuth = () => useContext(AuthContext)
+export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const checkLoggedIn = async () => {
       try {
-        const token = localStorage.getItem("token")
+        const token = localStorage.getItem("token");
 
         if (token) {
-          axios.defaults.headers.common["Authorization"] = `Bearer ${token}`
-          const response = await axios.get("/api/users/me")
-          setCurrentUser(response.data)
+          axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+          const response = await axios.get("/api/users/me");
+          setCurrentUser(response.data);
         }
       } catch (err) {
-        console.error("Authentication error:", err)
-        localStorage.removeItem("token")
-        delete axios.defaults.headers.common["Authorization"]
+        console.error("Authentication error:", err);
+        localStorage.removeItem("token");
+        delete axios.defaults.headers.common["Authorization"];
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    checkLoggedIn()
-  }, [])
+    checkLoggedIn();
+  }, []);
 
   const login = async (email, password) => {
     try {
-      setError(null)
-      const response = await axios.post("/api/auth/login", { email, password })
-      const { token, user } = response.data
+      setError(null);
+      const response = await axios.post("/api/auth/login", { email, password });
+      const { token, user } = response.data;
 
-      localStorage.setItem("token", token)
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`
-      setCurrentUser(user)
-      return user
+      localStorage.setItem("token", token);
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      setCurrentUser(user);
+      return user;
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed")
-      throw err
+      setError(err.response?.data?.message || "Login failed");
+      throw err;
     }
-  }
+  };
 
   const register = async (userData) => {
     try {
-      setError(null)
-      const response = await axios.post("/api/auth/register", userData)
-      const { token, user } = response.data
+      setError(null);
+      const response = await axios.post("/api/auth/register", userData);
+      const { token, user } = response.data;
 
-      localStorage.setItem("token", token)
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`
-      setCurrentUser(user)
-      return user
+      localStorage.setItem("token", token);
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      setCurrentUser(user);
+      return user;
     } catch (err) {
-      setError(err.response?.data?.message || "Registration failed")
-      throw err
+      setError(err.response?.data?.message || "Registration failed");
+      throw err;
     }
-  }
+  };
 
   const logout = () => {
-    localStorage.removeItem("token")
-    delete axios.defaults.headers.common["Authorization"]
-    setCurrentUser(null)
-  }
+    localStorage.removeItem("token");
+    delete axios.defaults.headers.common["Authorization"];
+    setCurrentUser(null);
+  };
 
   const value = {
     currentUser,
@@ -80,7 +80,11 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     isAdmin: currentUser?.role === "admin",
-  }
+  };
 
-  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>
-}
+  return (
+    <AuthContext.Provider value={value}>
+      {!loading && children}
+    </AuthContext.Provider>
+  );
+};

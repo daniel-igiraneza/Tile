@@ -1,35 +1,35 @@
-"use client"
+"use frontend";
 
-import { useState, useEffect } from "react"
-import styled from "styled-components"
-import Layout from "../components/layout/Layout"
-import Card from "../components/common/Card"
-import Button from "../components/common/Button"
-import Input from "../components/common/Input"
-import Select from "../components/common/Select"
+import { useState, useEffect } from "react";
+import styled from "styled-components";
+import Layout from "../components/layout/Layout";
+import Card from "../components/common/Card";
+import Button from "../components/common/Button";
+import Input from "../components/common/Input";
+import Select from "../components/common/Select";
 
 const AdminContainer = styled.div`
   max-width: 1200px;
   margin: 0 auto;
-`
+`;
 
 const PageHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
-`
+`;
 
 const PageTitle = styled.h1`
   font-size: 2rem;
-`
+`;
 
 const TabsContainer = styled.div`
   display: flex;
   gap: 1rem;
   margin-bottom: 2rem;
   border-bottom: 1px solid ${(props) => props.theme.colors.border};
-`
+`;
 
 const Tab = styled.button`
   padding: 0.75rem 1.5rem;
@@ -38,38 +38,40 @@ const Tab = styled.button`
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  color: ${(props) => (props.active ? props.theme.colors.primary : props.theme.colors.text)};
-  border-bottom: 2px solid ${(props) => (props.active ? props.theme.colors.primary : "transparent")};
+  color: ${(props) =>
+    props.active ? props.theme.colors.primary : props.theme.colors.text};
+  border-bottom: 2px solid
+    ${(props) => (props.active ? props.theme.colors.primary : "transparent")};
   transition: all 0.3s;
-  
+
   &:hover {
     color: ${(props) => props.theme.colors.primary};
   }
-`
+`;
 
 const StatsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
-`
+`;
 
 const StatCard = styled(Card)`
   text-align: center;
   padding: 1.5rem;
-`
+`;
 
 const StatValue = styled.div`
   font-size: 2.5rem;
   font-weight: 700;
   color: ${(props) => props.theme.colors.primary};
   margin-bottom: 0.5rem;
-`
+`;
 
 const StatLabel = styled.div`
   color: ${(props) => props.theme.colors.lightText};
   font-size: 1rem;
-`
+`;
 
 const TableContainer = styled.div`
   overflow-x: auto;
@@ -77,48 +79,48 @@ const TableContainer = styled.div`
   border-radius: ${(props) => props.theme.borderRadius.medium};
   box-shadow: ${(props) => props.theme.shadows.small};
   margin-bottom: 2rem;
-`
+`;
 
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
-`
+`;
 
 const TableHead = styled.thead`
   background-color: ${(props) => props.theme.colors.background};
   border-bottom: 1px solid ${(props) => props.theme.colors.border};
-`
+`;
 
 const TableRow = styled.tr`
   &:not(:last-child) {
     border-bottom: 1px solid ${(props) => props.theme.colors.border};
   }
-`
+`;
 
 const TableHeader = styled.th`
   padding: 1rem;
   text-align: left;
   font-weight: 600;
-`
+`;
 
 const TableCell = styled.td`
   padding: 1rem;
-`
+`;
 
 const ActionButtons = styled.div`
   display: flex;
   gap: 0.5rem;
-`
+`;
 
 const FormGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr;
   gap: 1.5rem;
-  
+
   @media (min-width: ${(props) => props.theme.breakpoints.tablet}) {
     grid-template-columns: repeat(2, 1fr);
   }
-`
+`;
 
 const FormActions = styled.div`
   display: flex;
@@ -126,27 +128,27 @@ const FormActions = styled.div`
   gap: 1rem;
   margin-top: 1.5rem;
   grid-column: 1 / -1;
-`
+`;
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState("users")
-  const [users, setUsers] = useState([])
-  const [tiles, setTiles] = useState([])
+  const [activeTab, setActiveTab] = useState("users");
+  const [users, setUsers] = useState([]);
+  const [tiles, setTiles] = useState([]);
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalCalculations: 0,
     activeUsers: 0,
     tileTypes: 0,
-  })
-  const [loading, setLoading] = useState(true)
-  const [showAddTileForm, setShowAddTileForm] = useState(false)
+  });
+  const [loading, setLoading] = useState(true);
+  const [showAddTileForm, setShowAddTileForm] = useState(false);
   const [tileFormData, setTileFormData] = useState({
     name: "",
     length: "",
     width: "",
     type: "ceramic",
     inStock: true,
-  })
+  });
 
   const tileTypeOptions = [
     { value: "ceramic", label: "Ceramic" },
@@ -154,7 +156,7 @@ const AdminDashboard = () => {
     { value: "natural-stone", label: "Natural Stone" },
     { value: "glass", label: "Glass" },
     { value: "mosaic", label: "Mosaic" },
-  ]
+  ];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -202,7 +204,7 @@ const AdminDashboard = () => {
             calculationsCount: 15,
             lastActive: new Date("2023-06-14"),
           },
-        ]
+        ];
 
         const mockTiles = [
           {
@@ -237,52 +239,55 @@ const AdminDashboard = () => {
             type: "glass",
             inStock: true,
           },
-        ]
+        ];
 
         const mockStats = {
           totalUsers: mockUsers.length,
-          totalCalculations: mockUsers.reduce((total, user) => total + user.calculationsCount, 0),
+          totalCalculations: mockUsers.reduce(
+            (total, user) => total + user.calculationsCount,
+            0
+          ),
           activeUsers: mockUsers.filter((user) => {
-            const lastActive = new Date(user.lastActive)
-            const oneWeekAgo = new Date()
-            oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
-            return lastActive > oneWeekAgo
+            const lastActive = new Date(user.lastActive);
+            const oneWeekAgo = new Date();
+            oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+            return lastActive > oneWeekAgo;
           }).length,
           tileTypes: mockTiles.length,
-        }
+        };
 
-        setUsers(mockUsers)
-        setTiles(mockTiles)
-        setStats(mockStats)
+        setUsers(mockUsers);
+        setTiles(mockTiles);
+        setStats(mockStats);
       } catch (error) {
-        console.error("Error fetching admin data:", error)
+        console.error("Error fetching admin data:", error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchData()
-  }, [])
+    fetchData();
+  }, []);
 
   const formatDate = (dateString) => {
-    const date = new Date(dateString)
+    const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
-    })
-  }
+    });
+  };
 
   const handleTileFormChange = (e) => {
-    const { name, value, type, checked } = e.target
+    const { name, value, type, checked } = e.target;
     setTileFormData({
       ...tileFormData,
       [name]: type === "checkbox" ? checked : value,
-    })
-  }
+    });
+  };
 
   const handleAddTile = (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
     // In a real app, you would send the data to the API
     // const response = await axios.post('/api/admin/tiles', tileFormData);
@@ -293,26 +298,26 @@ const AdminDashboard = () => {
       ...tileFormData,
       length: Number.parseFloat(tileFormData.length),
       width: Number.parseFloat(tileFormData.width),
-    }
+    };
 
-    setTiles([...tiles, newTile])
-    setShowAddTileForm(false)
+    setTiles([...tiles, newTile]);
+    setShowAddTileForm(false);
     setTileFormData({
       name: "",
       length: "",
       width: "",
       type: "ceramic",
       inStock: true,
-    })
-  }
+    });
+  };
 
   const handleDeleteTile = (tileId) => {
     // In a real app, you would send a delete request to the API
     // await axios.delete(`/api/admin/tiles/${tileId}`);
 
     // For demo purposes, remove the tile from the local state
-    setTiles(tiles.filter((tile) => tile._id !== tileId))
-  }
+    setTiles(tiles.filter((tile) => tile._id !== tileId));
+  };
 
   if (loading) {
     return (
@@ -321,7 +326,7 @@ const AdminDashboard = () => {
           <p>Loading admin dashboard...</p>
         </AdminContainer>
       </Layout>
-    )
+    );
   }
 
   return (
@@ -354,13 +359,22 @@ const AdminDashboard = () => {
         </StatsGrid>
 
         <TabsContainer>
-          <Tab active={activeTab === "users"} onClick={() => setActiveTab("users")}>
+          <Tab
+            active={activeTab === "users"}
+            onClick={() => setActiveTab("users")}
+          >
             Users
           </Tab>
-          <Tab active={activeTab === "tiles"} onClick={() => setActiveTab("tiles")}>
+          <Tab
+            active={activeTab === "tiles"}
+            onClick={() => setActiveTab("tiles")}
+          >
             Tile Database
           </Tab>
-          <Tab active={activeTab === "analytics"} onClick={() => setActiveTab("analytics")}>
+          <Tab
+            active={activeTab === "analytics"}
+            onClick={() => setActiveTab("analytics")}
+          >
             Analytics
           </Tab>
         </TabsContainer>
@@ -383,7 +397,9 @@ const AdminDashboard = () => {
                   <TableRow key={user._id}>
                     <TableCell>{user.name}</TableCell>
                     <TableCell>{user.email}</TableCell>
-                    <TableCell>{user.role.charAt(0).toUpperCase() + user.role.slice(1)}</TableCell>
+                    <TableCell>
+                      {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                    </TableCell>
                     <TableCell>{user.calculationsCount}</TableCell>
                     <TableCell>{formatDate(user.lastActive)}</TableCell>
                     <TableCell>
@@ -459,7 +475,13 @@ const AdminDashboard = () => {
                     />
 
                     <div>
-                      <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                      <label
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "0.5rem",
+                        }}
+                      >
                         <input
                           type="checkbox"
                           name="inStock"
@@ -496,7 +518,10 @@ const AdminDashboard = () => {
                       <TableCell>
                         {tile.type
                           .split("-")
-                          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                          .map(
+                            (word) =>
+                              word.charAt(0).toUpperCase() + word.slice(1)
+                          )
                           .join(" ")}
                       </TableCell>
                       <TableCell>
@@ -517,7 +542,11 @@ const AdminDashboard = () => {
                           <Button size="small" variant="outline">
                             Edit
                           </Button>
-                          <Button size="small" variant="danger" onClick={() => handleDeleteTile(tile._id)}>
+                          <Button
+                            size="small"
+                            variant="danger"
+                            onClick={() => handleDeleteTile(tile._id)}
+                          >
                             Delete
                           </Button>
                         </ActionButtons>
@@ -539,7 +568,7 @@ const AdminDashboard = () => {
         )}
       </AdminContainer>
     </Layout>
-  )
-}
+  );
+};
 
-export default AdminDashboard
+export default AdminDashboard;

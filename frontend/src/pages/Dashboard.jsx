@@ -1,103 +1,103 @@
-"use client"
+"use frontend";
 
-import { useState, useEffect } from "react"
-import { Link } from "react-router-dom"
-import styled from "styled-components"
-import axios from "axios"
-import Layout from "../components/layout/Layout"
-import Card from "../components/common/Card"
-import Button from "../components/common/Button"
-import { useAuth } from "../context/AuthContext"
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import styled from "styled-components";
+import axios from "axios";
+import Layout from "../components/layout/Layout";
+import Card from "../components/common/Card";
+import Button from "../components/common/Button";
+import { useAuth } from "../context/AuthContext";
 
 const DashboardHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
-`
+`;
 
 const WelcomeText = styled.div`
   h1 {
     font-size: 2rem;
     margin-bottom: 0.5rem;
   }
-  
+
   p {
     color: ${(props) => props.theme.colors.lightText};
   }
-`
+`;
 
 const StatsContainer = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
-`
+`;
 
 const StatCard = styled(Card)`
   text-align: center;
   padding: 1.5rem;
-`
+`;
 
 const StatValue = styled.div`
   font-size: 2.5rem;
   font-weight: 700;
   color: ${(props) => props.theme.colors.primary};
   margin-bottom: 0.5rem;
-`
+`;
 
 const StatLabel = styled.div`
   color: ${(props) => props.theme.colors.lightText};
   font-size: 1rem;
-`
+`;
 
 const ProjectsContainer = styled.div`
   margin-top: 2rem;
-`
+`;
 
 const ProjectsHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
-`
+`;
 
 const ProjectsTitle = styled.h2`
   font-size: 1.5rem;
-`
+`;
 
 const ProjectsTable = styled.div`
   overflow-x: auto;
   background-color: white;
   border-radius: ${(props) => props.theme.borderRadius.medium};
   box-shadow: ${(props) => props.theme.shadows.small};
-`
+`;
 
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
-`
+`;
 
 const TableHead = styled.thead`
   background-color: ${(props) => props.theme.colors.background};
   border-bottom: 1px solid ${(props) => props.theme.colors.border};
-`
+`;
 
 const TableRow = styled.tr`
   &:not(:last-child) {
     border-bottom: 1px solid ${(props) => props.theme.colors.border};
   }
-`
+`;
 
 const TableHeader = styled.th`
   padding: 1rem;
   text-align: left;
   font-weight: 600;
-`
+`;
 
 const TableCell = styled.td`
   padding: 1rem;
-`
+`;
 
 const StatusBadge = styled.span`
   display: inline-block;
@@ -105,69 +105,74 @@ const StatusBadge = styled.span`
   border-radius: 50px;
   font-size: 0.875rem;
   font-weight: 500;
-  
+
   ${(props) => {
     switch (props.status) {
       case "completed":
         return `
           background-color: ${props.theme.colors.success}20;
           color: ${props.theme.colors.success};
-        `
+        `;
       case "in-progress":
         return `
           background-color: ${props.theme.colors.primary}20;
           color: ${props.theme.colors.primary};
-        `
+        `;
       default:
         return `
           background-color: ${props.theme.colors.accent}20;
           color: ${props.theme.colors.accent};
-        `
+        `;
     }
   }}
-`
+`;
 
 const EmptyState = styled.div`
   text-align: center;
   padding: 3rem;
   color: ${(props) => props.theme.colors.lightText};
-`
+`;
 
 const Dashboard = () => {
-  const { currentUser } = useAuth()
-  const [calculations, setCalculations] = useState([])
+  const { currentUser } = useAuth();
+  const [calculations, setCalculations] = useState([]);
   const [stats, setStats] = useState({
     totalCalculations: 0,
     completedProjects: 0,
     savedTiles: 0,
-  })
-  const [loading, setLoading] = useState(true)
+  });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         // Fetch user's calculations
-        const response = await axios.get("/api/calculations")
-        setCalculations(response.data)
+        const response = await axios.get("/api/calculations");
+        setCalculations(response.data);
 
         // Calculate stats
-        const completed = response.data.filter((calc) => calc.status === "completed").length
-        const savedTiles = response.data.reduce((total, calc) => total + (calc.savedTiles || 0), 0)
+        const completed = response.data.filter(
+          (calc) => calc.status === "completed"
+        ).length;
+        const savedTiles = response.data.reduce(
+          (total, calc) => total + (calc.savedTiles || 0),
+          0
+        );
 
         setStats({
           totalCalculations: response.data.length,
           completedProjects: completed,
           savedTiles,
-        })
+        });
       } catch (error) {
-        console.error("Error fetching dashboard data:", error)
+        console.error("Error fetching dashboard data:", error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchData()
-  }, [])
+    fetchData();
+  }, []);
 
   // For demo purposes, let's create some mock data if API call fails
   useEffect(() => {
@@ -203,25 +208,30 @@ const Dashboard = () => {
           totalTiles: 98,
           savedTiles: 0,
         },
-      ]
+      ];
 
-      setCalculations(mockCalculations)
+      setCalculations(mockCalculations);
       setStats({
         totalCalculations: mockCalculations.length,
-        completedProjects: mockCalculations.filter((calc) => calc.status === "completed").length,
-        savedTiles: mockCalculations.reduce((total, calc) => total + (calc.savedTiles || 0), 0),
-      })
+        completedProjects: mockCalculations.filter(
+          (calc) => calc.status === "completed"
+        ).length,
+        savedTiles: mockCalculations.reduce(
+          (total, calc) => total + (calc.savedTiles || 0),
+          0
+        ),
+      });
     }
-  }, [loading, calculations])
+  }, [loading, calculations]);
 
   const formatDate = (dateString) => {
-    const date = new Date(dateString)
+    const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
-    })
-  }
+    });
+  };
 
   return (
     <Layout>
@@ -284,11 +294,17 @@ const Dashboard = () => {
                       <StatusBadge status={calculation.status}>
                         {calculation.status === "in-progress"
                           ? "In Progress"
-                          : calculation.status.charAt(0).toUpperCase() + calculation.status.slice(1)}
+                          : calculation.status.charAt(0).toUpperCase() +
+                            calculation.status.slice(1)}
                       </StatusBadge>
                     </TableCell>
                     <TableCell>
-                      <Button as={Link} to={`/layout/${calculation._id}`} size="small" variant="outline">
+                      <Button
+                        as={Link}
+                        to={`/layout/${calculation._id}`}
+                        size="small"
+                        variant="outline"
+                      >
                         View
                       </Button>
                     </TableCell>
@@ -299,7 +315,12 @@ const Dashboard = () => {
           ) : (
             <EmptyState>
               <p>No calculations found. Start by creating a new calculation.</p>
-              <Button as={Link} to="/calculator" variant="outline" style={{ marginTop: "1rem" }}>
+              <Button
+                as={Link}
+                to="/calculator"
+                variant="outline"
+                style={{ marginTop: "1rem" }}
+              >
                 Create Calculation
               </Button>
             </EmptyState>
@@ -307,7 +328,7 @@ const Dashboard = () => {
         </ProjectsTable>
       </ProjectsContainer>
     </Layout>
-  )
-}
+  );
+};
 
-export default Dashboard
+export default Dashboard;
