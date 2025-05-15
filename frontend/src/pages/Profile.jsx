@@ -1,30 +1,32 @@
-"use frontend";
+"use client"
 
-import { useState } from "react";
-import styled from "styled-components";
-import Layout from "../components/layout/Layout";
-import Card from "../components/common/Card";
-import Input from "../components/common/Input";
-import Button from "../components/common/Button";
-import { useAuth } from "../context/AuthContext";
+import { useState, useEffect } from "react"
+import styled from "styled-components"
+import axios from "axios"
+import Layout from "../components/layout/Layout"
+import Card from "../components/common/Card"
+import Input from "../components/common/Input"
+import Button from "../components/common/Button"
+import { useAuth } from "../context/AuthContext"
+import Loader from "../components/common/Loader"
 
 const ProfileContainer = styled.div`
   max-width: 800px;
   margin: 0 auto;
-`;
+`
 
 const PageTitle = styled.h1`
   font-size: 2rem;
   margin-bottom: 2rem;
   text-align: center;
-`;
+`
 
 const TabsContainer = styled.div`
   display: flex;
   gap: 1rem;
   margin-bottom: 2rem;
   border-bottom: 1px solid ${(props) => props.theme.colors.border};
-`;
+`
 
 const Tab = styled.button`
   padding: 0.75rem 1.5rem;
@@ -33,43 +35,41 @@ const Tab = styled.button`
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  color: ${(props) =>
-    props.active ? props.theme.colors.primary : props.theme.colors.text};
-  border-bottom: 2px solid
-    ${(props) => (props.active ? props.theme.colors.primary : "transparent")};
+  color: ${(props) => (props.active ? props.theme.colors.primary : props.theme.colors.text)};
+  border-bottom: 2px solid ${(props) => (props.active ? props.theme.colors.primary : "transparent")};
   transition: all 0.3s;
-
+  
   &:hover {
     color: ${(props) => props.theme.colors.primary};
   }
-`;
+`
 
 const FormSection = styled.div`
   margin-bottom: 2rem;
-`;
+`
 
 const SectionTitle = styled.h2`
   font-size: 1.25rem;
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid ${(props) => props.theme.colors.border};
-`;
+`
 
 const FormRow = styled.div`
   display: grid;
   grid-template-columns: 1fr;
   gap: 1rem;
-
+  
   @media (min-width: ${(props) => props.theme.breakpoints.tablet}) {
     grid-template-columns: repeat(2, 1fr);
   }
-`;
+`
 
 const FormActions = styled.div`
   display: flex;
   justify-content: flex-end;
   margin-top: 2rem;
-`;
+`
 
 const SuccessMessage = styled.div`
   background-color: ${(props) => props.theme.colors.success}20;
@@ -77,7 +77,7 @@ const SuccessMessage = styled.div`
   padding: 1rem;
   border-radius: ${(props) => props.theme.borderRadius.medium};
   margin-bottom: 1.5rem;
-`;
+`
 
 const ErrorMessage = styled.div`
   background-color: ${(props) => props.theme.colors.error}20;
@@ -85,161 +85,191 @@ const ErrorMessage = styled.div`
   padding: 1rem;
   border-radius: ${(props) => props.theme.borderRadius.medium};
   margin-bottom: 1.5rem;
-`;
+`
 
 const Profile = () => {
-  const { currentUser } = useAuth();
-  const [activeTab, setActiveTab] = useState("profile");
+  const { currentUser, setCurrentUser } = useAuth()
+  const [activeTab, setActiveTab] = useState("profile")
   const [profileData, setProfileData] = useState({
-    name: currentUser?.name || "",
-    email: currentUser?.email || "",
-    company: currentUser?.company || "",
-    phone: currentUser?.phone || "",
-  });
+    name: "",
+    email: "",
+    company: "",
+    phone: "",
+  })
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
-  });
-  const [formErrors, setFormErrors] = useState({});
-  const [successMessage, setSuccessMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  })
+  const [formErrors, setFormErrors] = useState({})
+  const [successMessage, setSuccessMessage] = useState("")
+  const [errorMessage, setErrorMessage] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const response = await axios.get("/api/users/me")
+
+        setProfileData({
+          name: response.data.name || "",
+          email: response.data.email || "",
+          company: response.data.company || "",
+          phone: response.data.phone || "",
+        })
+      } catch (error) {
+        console.error("Error fetching user profile:", error)
+        setErrorMessage("Failed to load your profile. Please try again.")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchUserProfile()
+  }, [])
 
   const handleProfileChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value } = e.target
     setProfileData({
       ...profileData,
       [name]: value,
-    });
+    })
 
     // Clear error when user types
     if (formErrors[name]) {
       setFormErrors({
         ...formErrors,
         [name]: "",
-      });
+      })
     }
-  };
+  }
 
   const handlePasswordChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value } = e.target
     setPasswordData({
       ...passwordData,
       [name]: value,
-    });
+    })
 
     // Clear error when user types
     if (formErrors[name]) {
       setFormErrors({
         ...formErrors,
         [name]: "",
-      });
+      })
     }
-  };
+  }
 
   const validateProfileForm = () => {
-    const errors = {};
+    const errors = {}
 
     if (!profileData.name) {
-      errors.name = "Name is required";
+      errors.name = "Name is required"
     }
 
     if (!profileData.email) {
-      errors.email = "Email is required";
+      errors.email = "Email is required"
     } else if (!/\S+@\S+\.\S+/.test(profileData.email)) {
-      errors.email = "Email is invalid";
+      errors.email = "Email is invalid"
     }
 
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
+    setFormErrors(errors)
+    return Object.keys(errors).length === 0
+  }
 
   const validatePasswordForm = () => {
-    const errors = {};
+    const errors = {}
 
     if (!passwordData.currentPassword) {
-      errors.currentPassword = "Current password is required";
+      errors.currentPassword = "Current password is required"
     }
 
     if (!passwordData.newPassword) {
-      errors.newPassword = "New password is required";
+      errors.newPassword = "New password is required"
     } else if (passwordData.newPassword.length < 6) {
-      errors.newPassword = "Password must be at least 6 characters";
+      errors.newPassword = "Password must be at least 6 characters"
     }
 
     if (!passwordData.confirmPassword) {
-      errors.confirmPassword = "Please confirm your new password";
+      errors.confirmPassword = "Please confirm your new password"
     } else if (passwordData.newPassword !== passwordData.confirmPassword) {
-      errors.confirmPassword = "Passwords do not match";
+      errors.confirmPassword = "Passwords do not match"
     }
 
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
+    setFormErrors(errors)
+    return Object.keys(errors).length === 0
+  }
 
   const handleUpdateProfile = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
 
     if (!validateProfileForm()) {
-      return;
+      return
     }
 
-    setIsSubmitting(true);
-    setSuccessMessage("");
-    setErrorMessage("");
+    setIsSubmitting(true)
+    setSuccessMessage("")
+    setErrorMessage("")
 
     try {
-      // In a real app, you would send the data to the API
-      // const response = await axios.put('/api/users/profile', profileData);
+      const response = await axios.put("/api/users/profile", profileData)
 
-      // For demo purposes, simulate a delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Update the current user in the auth context
+      setCurrentUser({
+        ...currentUser,
+        name: response.data.name,
+        email: response.data.email,
+        company: response.data.company,
+        phone: response.data.phone,
+      })
 
-      setSuccessMessage("Profile updated successfully!");
+      setSuccessMessage("Profile updated successfully!")
     } catch (error) {
-      setErrorMessage(
-        error.response?.data?.message ||
-          "Failed to update profile. Please try again."
-      );
+      console.error("Error updating profile:", error)
+      setErrorMessage(error.response?.data?.message || "Failed to update profile. Please try again.")
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   const handleUpdatePassword = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
 
     if (!validatePasswordForm()) {
-      return;
+      return
     }
 
-    setIsSubmitting(true);
-    setSuccessMessage("");
-    setErrorMessage("");
+    setIsSubmitting(true)
+    setSuccessMessage("")
+    setErrorMessage("")
 
     try {
-      // In a real app, you would send the data to the API
-      // const response = await axios.put('/api/users/password', passwordData);
+      await axios.put("/api/users/password", passwordData)
 
-      // For demo purposes, simulate a delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      setSuccessMessage("Password updated successfully!");
+      setSuccessMessage("Password updated successfully!")
       setPasswordData({
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
-      });
+      })
     } catch (error) {
-      setErrorMessage(
-        error.response?.data?.message ||
-          "Failed to update password. Please try again."
-      );
+      console.error("Error updating password:", error)
+      setErrorMessage(error.response?.data?.message || "Failed to update password. Please try again.")
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
+
+  if (loading) {
+    return (
+      <Layout>
+        <ProfileContainer>
+          <Loader />
+        </ProfileContainer>
+      </Layout>
+    )
+  }
 
   return (
     <Layout>
@@ -247,25 +277,17 @@ const Profile = () => {
         <PageTitle>Your Profile</PageTitle>
 
         <TabsContainer>
-          <Tab
-            active={activeTab === "profile"}
-            onClick={() => setActiveTab("profile")}
-          >
+          <Tab active={activeTab === "profile"} onClick={() => setActiveTab("profile")}>
             Profile Information
           </Tab>
-          <Tab
-            active={activeTab === "password"}
-            onClick={() => setActiveTab("password")}
-          >
+          <Tab active={activeTab === "password"} onClick={() => setActiveTab("password")}>
             Change Password
           </Tab>
         </TabsContainer>
 
         {activeTab === "profile" && (
           <Card>
-            {successMessage && (
-              <SuccessMessage>{successMessage}</SuccessMessage>
-            )}
+            {successMessage && <SuccessMessage>{successMessage}</SuccessMessage>}
             {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
 
             <form onSubmit={handleUpdateProfile}>
@@ -332,9 +354,7 @@ const Profile = () => {
 
         {activeTab === "password" && (
           <Card>
-            {successMessage && (
-              <SuccessMessage>{successMessage}</SuccessMessage>
-            )}
+            {successMessage && <SuccessMessage>{successMessage}</SuccessMessage>}
             {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
 
             <form onSubmit={handleUpdatePassword}>
@@ -384,7 +404,7 @@ const Profile = () => {
         )}
       </ProfileContainer>
     </Layout>
-  );
-};
+  )
+}
 
-export default Profile;
+export default Profile

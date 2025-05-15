@@ -33,17 +33,21 @@ const ErrorMessage = styled.p`
   margin-top: ${(props) => props.theme.spacing.xs};
 `
 
-const Select = ({ label, error, options = [], ...props }) => {
+const Select = ({ label, error, options = [], children, ...props }) => {
   return (
     <SelectContainer>
       {label && <Label>{label}</Label>}
       <StyledSelect error={error} {...props}>
-        <option value="">Select an option</option>
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
+        {children || (
+          <>
+            <option value="">Select an option</option>
+            {options.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </>
+        )}
       </StyledSelect>
       {error && <ErrorMessage>{error}</ErrorMessage>}
     </SelectContainer>

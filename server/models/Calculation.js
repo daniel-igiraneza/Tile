@@ -1,74 +1,67 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const CalculationSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: true,
+    required: true
   },
   name: {
     type: String,
-    required: true,
+    required: true
   },
   roomLength: {
     type: Number,
-    required: true,
+    required: true
   },
   roomWidth: {
     type: Number,
-    required: true,
+    required: true
   },
   tileLength: {
     type: Number,
-    required: true,
+    required: true
   },
   tileWidth: {
     type: Number,
-    required: true,
+    required: true
   },
   spacing: {
     type: Number,
-    default: 2, // Default 2mm spacing
+    default: 0
   },
   pattern: {
     type: String,
-    enum: ["grid", "brick", "herringbone", "diagonal"],
-    default: "grid",
+    enum: ["grid", "brick", "herringbone", "diagonal", "custom"],
+    default: "grid"
   },
   planImage: {
     type: String,
-    default: null,
+    default: ""
   },
   results: {
-    tilesNeeded: Number,
-    wholeTiles: Number,
-    cutTiles: Number,
-    edgeTiles: Number,
-    cornerTiles: Number,
-    totalTileArea: Number,
-    totalTilesWithWaste: Number,
-    tilesAlongLength: Number,
-    tilesAlongWidth: Number,
+    type: Object,
+    default: {}
   },
   status: {
     type: String,
-    enum: ["draft", "in-progress", "completed"],
-    default: "draft",
+    enum: ["draft", "in-progress", "completed", "cancelled"],
+    default: "draft"
   },
   createdAt: {
     type: Date,
-    default: Date.now,
+    default: Date.now
   },
   updatedAt: {
     type: Date,
-    default: Date.now,
-  },
-})
+    default: Date.now
+  }
+});
 
 // Update the updatedAt field before saving
-CalculationSchema.pre("save", function (next) {
-  this.updatedAt = Date.now()
-  next()
-})
+CalculationSchema.pre("save", function(next) {
+  this.updatedAt = Date.now();
+  next();
+});
 
-module.exports = mongoose.model("Calculation", CalculationSchema)
+module.exports = mongoose.model("Calculation", CalculationSchema);

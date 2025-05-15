@@ -1,35 +1,37 @@
-"use frontend";
+"use client"
 
-import { useState, useEffect } from "react";
-import styled from "styled-components";
-import Layout from "../components/layout/Layout";
-import Card from "../components/common/Card";
-import Button from "../components/common/Button";
-import Input from "../components/common/Input";
-import Select from "../components/common/Select";
+import { useState, useEffect } from "react"
+import styled from "styled-components"
+import axios from "axios"
+import Layout from "../components/layout/Layout"
+import Card from "../components/common/Card"
+import Button from "../components/common/Button"
+import Input from "../components/common/Input"
+import Select from "../components/common/Select"
+import Loader from "../components/common/Loader"
 
 const AdminContainer = styled.div`
   max-width: 1200px;
   margin: 0 auto;
-`;
+`
 
 const PageHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
-`;
+`
 
 const PageTitle = styled.h1`
   font-size: 2rem;
-`;
+`
 
 const TabsContainer = styled.div`
   display: flex;
   gap: 1rem;
   margin-bottom: 2rem;
   border-bottom: 1px solid ${(props) => props.theme.colors.border};
-`;
+`
 
 const Tab = styled.button`
   padding: 0.75rem 1.5rem;
@@ -38,40 +40,38 @@ const Tab = styled.button`
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  color: ${(props) =>
-    props.active ? props.theme.colors.primary : props.theme.colors.text};
-  border-bottom: 2px solid
-    ${(props) => (props.active ? props.theme.colors.primary : "transparent")};
+  color: ${(props) => (props.active ? props.theme.colors.primary : props.theme.colors.text)};
+  border-bottom: 2px solid ${(props) => (props.active ? props.theme.colors.primary : "transparent")};
   transition: all 0.3s;
-
+  
   &:hover {
     color: ${(props) => props.theme.colors.primary};
   }
-`;
+`
 
 const StatsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
-`;
+`
 
 const StatCard = styled(Card)`
   text-align: center;
   padding: 1.5rem;
-`;
+`
 
 const StatValue = styled.div`
   font-size: 2.5rem;
   font-weight: 700;
   color: ${(props) => props.theme.colors.primary};
   margin-bottom: 0.5rem;
-`;
+`
 
 const StatLabel = styled.div`
   color: ${(props) => props.theme.colors.lightText};
   font-size: 1rem;
-`;
+`
 
 const TableContainer = styled.div`
   overflow-x: auto;
@@ -79,48 +79,48 @@ const TableContainer = styled.div`
   border-radius: ${(props) => props.theme.borderRadius.medium};
   box-shadow: ${(props) => props.theme.shadows.small};
   margin-bottom: 2rem;
-`;
+`
 
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
-`;
+`
 
 const TableHead = styled.thead`
   background-color: ${(props) => props.theme.colors.background};
   border-bottom: 1px solid ${(props) => props.theme.colors.border};
-`;
+`
 
 const TableRow = styled.tr`
   &:not(:last-child) {
     border-bottom: 1px solid ${(props) => props.theme.colors.border};
   }
-`;
+`
 
 const TableHeader = styled.th`
   padding: 1rem;
   text-align: left;
   font-weight: 600;
-`;
+`
 
 const TableCell = styled.td`
   padding: 1rem;
-`;
+`
 
 const ActionButtons = styled.div`
   display: flex;
   gap: 0.5rem;
-`;
+`
 
 const FormGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr;
   gap: 1.5rem;
-
+  
   @media (min-width: ${(props) => props.theme.breakpoints.tablet}) {
     grid-template-columns: repeat(2, 1fr);
   }
-`;
+`
 
 const FormActions = styled.div`
   display: flex;
@@ -128,27 +128,54 @@ const FormActions = styled.div`
   gap: 1rem;
   margin-top: 1.5rem;
   grid-column: 1 / -1;
-`;
+`
+
+const ErrorMessage = styled.div`
+  background-color: ${(props) => props.theme.colors.error}20;
+  color: ${(props) => props.theme.colors.error};
+  padding: 1rem;
+  border-radius: ${(props) => props.theme.borderRadius.medium};
+  margin-bottom: 1.5rem;
+`
+
+const SuccessMessage = styled.div`
+  background-color: ${(props) => props.theme.colors.success}20;
+  color: ${(props) => props.theme.colors.success};
+  padding: 1rem;
+  border-radius: ${(props) => props.theme.borderRadius.medium};
+  margin-bottom: 1.5rem;
+`
+
+const ChartContainer = styled.div`
+  background-color: white;
+  border-radius: ${(props) => props.theme.borderRadius.medium};
+  padding: 1.5rem;
+  box-shadow: ${(props) => props.theme.shadows.small};
+  margin-bottom: 2rem;
+  height: 400px;
+`
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState("users");
-  const [users, setUsers] = useState([]);
-  const [tiles, setTiles] = useState([]);
+  const [activeTab, setActiveTab] = useState("users")
+  const [users, setUsers] = useState([])
+  const [tiles, setTiles] = useState([])
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalCalculations: 0,
     activeUsers: 0,
     tileTypes: 0,
-  });
-  const [loading, setLoading] = useState(true);
-  const [showAddTileForm, setShowAddTileForm] = useState(false);
+  })
+  const [loading, setLoading] = useState(true)
+  const [showAddTileForm, setShowAddTileForm] = useState(false)
   const [tileFormData, setTileFormData] = useState({
     name: "",
     length: "",
     width: "",
     type: "ceramic",
     inStock: true,
-  });
+  })
+  const [error, setError] = useState("")
+  const [success, setSuccess] = useState("")
 
   const tileTypeOptions = [
     { value: "ceramic", label: "Ceramic" },
@@ -156,177 +183,146 @@ const AdminDashboard = () => {
     { value: "natural-stone", label: "Natural Stone" },
     { value: "glass", label: "Glass" },
     { value: "mosaic", label: "Mosaic" },
-  ];
+  ]
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // In a real app, you would fetch data from the API
-        // const usersResponse = await axios.get('/api/admin/users');
-        // const tilesResponse = await axios.get('/api/admin/tiles');
-        // const statsResponse = await axios.get('/api/admin/stats');
+        // Fetch admin dashboard data from the database
+        const statsResponse = await axios.get("/api/admin/stats")
+        const usersResponse = await axios.get("/api/admin/users")
+        const tilesResponse = await axios.get("/api/tiles")
 
-        // setUsers(usersResponse.data);
-        // setTiles(tilesResponse.data);
-        // setStats(statsResponse.data);
-
-        // For demo purposes, create mock data
-        const mockUsers = [
-          {
-            _id: "1",
-            name: "John Doe",
-            email: "john@example.com",
-            role: "engineer",
-            calculationsCount: 12,
-            lastActive: new Date("2023-06-15"),
-          },
-          {
-            _id: "2",
-            name: "Jane Smith",
-            email: "jane@example.com",
-            role: "homeowner",
-            calculationsCount: 5,
-            lastActive: new Date("2023-06-10"),
-          },
-          {
-            _id: "3",
-            name: "Bob Johnson",
-            email: "bob@example.com",
-            role: "supplier",
-            calculationsCount: 8,
-            lastActive: new Date("2023-06-12"),
-          },
-          {
-            _id: "4",
-            name: "Alice Brown",
-            email: "alice@example.com",
-            role: "architect",
-            calculationsCount: 15,
-            lastActive: new Date("2023-06-14"),
-          },
-        ];
-
-        const mockTiles = [
-          {
-            _id: "1",
-            name: "Classic Ceramic",
-            length: 30,
-            width: 30,
-            type: "ceramic",
-            inStock: true,
-          },
-          {
-            _id: "2",
-            name: "Premium Porcelain",
-            length: 60,
-            width: 60,
-            type: "porcelain",
-            inStock: true,
-          },
-          {
-            _id: "3",
-            name: "Marble Stone",
-            length: 40,
-            width: 40,
-            type: "natural-stone",
-            inStock: false,
-          },
-          {
-            _id: "4",
-            name: "Glass Mosaic",
-            length: 10,
-            width: 10,
-            type: "glass",
-            inStock: true,
-          },
-        ];
-
-        const mockStats = {
-          totalUsers: mockUsers.length,
-          totalCalculations: mockUsers.reduce(
-            (total, user) => total + user.calculationsCount,
-            0
-          ),
-          activeUsers: mockUsers.filter((user) => {
-            const lastActive = new Date(user.lastActive);
-            const oneWeekAgo = new Date();
-            oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-            return lastActive > oneWeekAgo;
-          }).length,
-          tileTypes: mockTiles.length,
-        };
-
-        setUsers(mockUsers);
-        setTiles(mockTiles);
-        setStats(mockStats);
+        setStats(statsResponse.data)
+        setUsers(usersResponse.data)
+        setTiles(tilesResponse.data)
       } catch (error) {
-        console.error("Error fetching admin data:", error);
+        console.error("Error fetching admin data:", error)
+        setError("Failed to load admin dashboard data. Please try again.")
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchData();
-  }, []);
+    fetchData()
+  }, [])
 
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
+    const date = new Date(dateString)
     return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
-    });
-  };
+    })
+  }
 
   const handleTileFormChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, type, checked } = e.target
     setTileFormData({
       ...tileFormData,
       [name]: type === "checkbox" ? checked : value,
-    });
-  };
+    })
+  }
 
-  const handleAddTile = (e) => {
-    e.preventDefault();
+  const handleAddTile = async (e) => {
+    e.preventDefault()
+    setError("")
+    setSuccess("")
 
-    // In a real app, you would send the data to the API
-    // const response = await axios.post('/api/admin/tiles', tileFormData);
+    try {
+      // Add tile to the database
+      const response = await axios.post("/api/tiles", {
+        name: tileFormData.name,
+        length: Number.parseFloat(tileFormData.length),
+        width: Number.parseFloat(tileFormData.width),
+        type: tileFormData.type,
+        inStock: tileFormData.inStock,
+      })
 
-    // For demo purposes, add the new tile to the local state
-    const newTile = {
-      _id: Date.now().toString(),
-      ...tileFormData,
-      length: Number.parseFloat(tileFormData.length),
-      width: Number.parseFloat(tileFormData.width),
-    };
+      // Add the new tile to the local state
+      setTiles([...tiles, response.data])
 
-    setTiles([...tiles, newTile]);
-    setShowAddTileForm(false);
-    setTileFormData({
-      name: "",
-      length: "",
-      width: "",
-      type: "ceramic",
-      inStock: true,
-    });
-  };
+      // Update stats
+      setStats({
+        ...stats,
+        tileTypes: stats.tileTypes + 1,
+      })
 
-  const handleDeleteTile = (tileId) => {
-    // In a real app, you would send a delete request to the API
-    // await axios.delete(`/api/admin/tiles/${tileId}`);
+      setSuccess("Tile added successfully!")
+      setShowAddTileForm(false)
+      setTileFormData({
+        name: "",
+        length: "",
+        width: "",
+        type: "ceramic",
+        inStock: true,
+      })
+    } catch (error) {
+      console.error("Error adding tile:", error)
+      setError(error.response?.data?.message || "Failed to add tile. Please try again.")
+    }
+  }
 
-    // For demo purposes, remove the tile from the local state
-    setTiles(tiles.filter((tile) => tile._id !== tileId));
-  };
+  const handleDeleteTile = async (tileId) => {
+    if (window.confirm("Are you sure you want to delete this tile?")) {
+      setError("")
+      setSuccess("")
+
+      try {
+        // Delete tile from the database
+        await axios.delete(`/api/tiles/${tileId}`)
+
+        // Remove the tile from the local state
+        setTiles(tiles.filter((tile) => tile._id !== tileId))
+
+        // Update stats
+        setStats({
+          ...stats,
+          tileTypes: stats.tileTypes - 1,
+        })
+
+        setSuccess("Tile deleted successfully!")
+      } catch (error) {
+        console.error("Error deleting tile:", error)
+        setError(error.response?.data?.message || "Failed to delete tile. Please try again.")
+      }
+    }
+  }
+
+  const handleDeleteUser = async (userId) => {
+    if (window.confirm("Are you sure you want to delete this user? This will also delete all their calculations.")) {
+      setError("")
+      setSuccess("")
+
+      try {
+        // Delete user from the database
+        await axios.delete(`/api/admin/users/${userId}`)
+
+        // Remove the user from the local state
+        setUsers(users.filter((user) => user._id !== userId))
+
+        // Update stats
+        setStats({
+          ...stats,
+          totalUsers: stats.totalUsers - 1,
+        })
+
+        setSuccess("User deleted successfully!")
+      } catch (error) {
+        console.error("Error deleting user:", error)
+        setError(error.response?.data?.message || "Failed to delete user. Please try again.")
+      }
+    }
+  }
 
   if (loading) {
     return (
       <Layout>
         <AdminContainer>
-          <p>Loading admin dashboard...</p>
+          <Loader />
         </AdminContainer>
       </Layout>
-    );
+    )
   }
 
   return (
@@ -335,6 +331,9 @@ const AdminDashboard = () => {
         <PageHeader>
           <PageTitle>Admin Dashboard</PageTitle>
         </PageHeader>
+
+        {error && <ErrorMessage>{error}</ErrorMessage>}
+        {success && <SuccessMessage>{success}</SuccessMessage>}
 
         <StatsGrid>
           <StatCard>
@@ -359,22 +358,13 @@ const AdminDashboard = () => {
         </StatsGrid>
 
         <TabsContainer>
-          <Tab
-            active={activeTab === "users"}
-            onClick={() => setActiveTab("users")}
-          >
+          <Tab active={activeTab === "users"} onClick={() => setActiveTab("users")}>
             Users
           </Tab>
-          <Tab
-            active={activeTab === "tiles"}
-            onClick={() => setActiveTab("tiles")}
-          >
+          <Tab active={activeTab === "tiles"} onClick={() => setActiveTab("tiles")}>
             Tile Database
           </Tab>
-          <Tab
-            active={activeTab === "analytics"}
-            onClick={() => setActiveTab("analytics")}
-          >
+          <Tab active={activeTab === "analytics"} onClick={() => setActiveTab("analytics")}>
             Analytics
           </Tab>
         </TabsContainer>
@@ -397,9 +387,7 @@ const AdminDashboard = () => {
                   <TableRow key={user._id}>
                     <TableCell>{user.name}</TableCell>
                     <TableCell>{user.email}</TableCell>
-                    <TableCell>
-                      {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                    </TableCell>
+                    <TableCell>{user.role.charAt(0).toUpperCase() + user.role.slice(1)}</TableCell>
                     <TableCell>{user.calculationsCount}</TableCell>
                     <TableCell>{formatDate(user.lastActive)}</TableCell>
                     <TableCell>
@@ -407,7 +395,7 @@ const AdminDashboard = () => {
                         <Button size="small" variant="outline">
                           Edit
                         </Button>
-                        <Button size="small" variant="danger">
+                        <Button size="small" variant="danger" onClick={() => handleDeleteUser(user._id)}>
                           Delete
                         </Button>
                       </ActionButtons>
@@ -475,13 +463,7 @@ const AdminDashboard = () => {
                     />
 
                     <div>
-                      <label
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.5rem",
-                        }}
-                      >
+                      <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                         <input
                           type="checkbox"
                           name="inStock"
@@ -518,10 +500,7 @@ const AdminDashboard = () => {
                       <TableCell>
                         {tile.type
                           .split("-")
-                          .map(
-                            (word) =>
-                              word.charAt(0).toUpperCase() + word.slice(1)
-                          )
+                          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
                           .join(" ")}
                       </TableCell>
                       <TableCell>
@@ -542,11 +521,7 @@ const AdminDashboard = () => {
                           <Button size="small" variant="outline">
                             Edit
                           </Button>
-                          <Button
-                            size="small"
-                            variant="danger"
-                            onClick={() => handleDeleteTile(tile._id)}
-                          >
+                          <Button size="small" variant="danger" onClick={() => handleDeleteTile(tile._id)}>
                             Delete
                           </Button>
                         </ActionButtons>
@@ -560,15 +535,25 @@ const AdminDashboard = () => {
         )}
 
         {activeTab === "analytics" && (
-          <Card>
-            <p style={{ textAlign: "center", padding: "2rem" }}>
-              Analytics dashboard would be implemented in a real application.
-            </p>
-          </Card>
+          <>
+            <ChartContainer>
+              <h3>User Registration Over Time</h3>
+              <p style={{ textAlign: "center", marginTop: "150px" }}>
+                Analytics charts would be implemented here with a charting library like Chart.js or Recharts.
+              </p>
+            </ChartContainer>
+
+            <ChartContainer>
+              <h3>Calculation Types Distribution</h3>
+              <p style={{ textAlign: "center", marginTop: "150px" }}>
+                Analytics charts would be implemented here with a charting library like Chart.js or Recharts.
+              </p>
+            </ChartContainer>
+          </>
         )}
       </AdminContainer>
     </Layout>
-  );
-};
+  )
+}
 
-export default AdminDashboard;
+export default AdminDashboard
