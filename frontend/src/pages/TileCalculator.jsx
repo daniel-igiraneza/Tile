@@ -1,62 +1,64 @@
-"use frontend";
+"use client"
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import styled from "styled-components";
-import Layout from "../components/layout/Layout";
-import Card from "../components/common/Card";
-import Input from "../components/common/Input";
-import Select from "../components/common/Select";
-import Button from "../components/common/Button";
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import styled from "styled-components"
+import axios from "axios"
+import Layout from "../components/layout/Layout"
+import Card from "../components/common/Card"
+import Input from "../components/common/Input"
+import Select from "../components/common/Select"
+import Button from "../components/common/Button"
+import Loader from "../components/common/Loader"
 
 const CalculatorContainer = styled.div`
   max-width: 800px;
   margin: 0 auto;
-`;
+`
 
 const PageTitle = styled.h1`
   font-size: 2rem;
   margin-bottom: 1.5rem;
   text-align: center;
-`;
+`
 
 const FormSection = styled.div`
   margin-bottom: 2rem;
-`;
+`
 
 const SectionTitle = styled.h2`
   font-size: 1.25rem;
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid ${(props) => props.theme.colors.border};
-`;
+`
 
 const FormRow = styled.div`
   display: grid;
   grid-template-columns: 1fr;
   gap: 1rem;
-
+  
   @media (min-width: ${(props) => props.theme.breakpoints.tablet}) {
     grid-template-columns: repeat(2, 1fr);
   }
-`;
+`
 
 const FormActions = styled.div`
   display: flex;
   justify-content: space-between;
   margin-top: 2rem;
-`;
+`
 
 const ResultsContainer = styled.div`
   margin-top: 2rem;
-`;
+`
 
 const ResultsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 1rem;
   margin-top: 1rem;
-`;
+`
 
 const ResultCard = styled.div`
   background-color: white;
@@ -64,30 +66,30 @@ const ResultCard = styled.div`
   padding: 1.5rem;
   text-align: center;
   box-shadow: ${(props) => props.theme.shadows.small};
-`;
+`
 
 const ResultValue = styled.div`
   font-size: 2rem;
   font-weight: 700;
   color: ${(props) => props.theme.colors.primary};
   margin-bottom: 0.5rem;
-`;
+`
 
 const ResultLabel = styled.div`
   color: ${(props) => props.theme.colors.lightText};
   font-size: 0.9rem;
-`;
+`
 
 const FileUploadContainer = styled.div`
   margin-bottom: ${(props) => props.theme.spacing.md};
-`;
+`
 
 const FileUploadLabel = styled.label`
   display: block;
   margin-bottom: ${(props) => props.theme.spacing.xs};
   font-weight: 500;
   font-size: 0.9rem;
-`;
+`
 
 const FileUploadInput = styled.div`
   border: 2px dashed ${(props) => props.theme.colors.border};
@@ -96,31 +98,31 @@ const FileUploadInput = styled.div`
   text-align: center;
   cursor: pointer;
   transition: border-color 0.3s;
-
+  
   &:hover {
     border-color: ${(props) => props.theme.colors.primary};
   }
-
+  
   input {
     display: none;
   }
-`;
+`
 
 const UploadIcon = styled.div`
   font-size: 2rem;
   margin-bottom: 1rem;
   color: ${(props) => props.theme.colors.primary};
-`;
+`
 
 const UploadText = styled.p`
   margin-bottom: 0.5rem;
   font-weight: 500;
-`;
+`
 
 const UploadSubtext = styled.p`
   color: ${(props) => props.theme.colors.lightText};
   font-size: 0.875rem;
-`;
+`
 
 const UploadedFile = styled.div`
   display: flex;
@@ -129,20 +131,20 @@ const UploadedFile = styled.div`
   padding: 0.75rem;
   background-color: ${(props) => props.theme.colors.background};
   border-radius: ${(props) => props.theme.borderRadius.medium};
-`;
+`
 
 const FileIcon = styled.div`
   margin-right: 0.75rem;
   font-size: 1.5rem;
   color: ${(props) => props.theme.colors.primary};
-`;
+`
 
 const FileName = styled.div`
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-`;
+`
 
 const RemoveFileButton = styled.button`
   background: none;
@@ -150,10 +152,18 @@ const RemoveFileButton = styled.button`
   color: ${(props) => props.theme.colors.error};
   cursor: pointer;
   font-size: 1.25rem;
-`;
+`
+
+const ErrorMessage = styled.div`
+  background-color: ${(props) => props.theme.colors.error}20;
+  color: ${(props) => props.theme.colors.error};
+  padding: 1rem;
+  border-radius: ${(props) => props.theme.borderRadius.medium};
+  margin-bottom: 1.5rem;
+`
 
 const TileCalculator = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
   const [formData, setFormData] = useState({
     name: "",
     roomLength: "",
@@ -162,196 +172,162 @@ const TileCalculator = () => {
     tileWidth: "",
     spacing: "2",
     pattern: "grid",
-  });
-  const [uploadedFile, setUploadedFile] = useState(null);
-  const [formErrors, setFormErrors] = useState({});
-  const [isCalculating, setIsCalculating] = useState(false);
-  const [results, setResults] = useState(null);
+  })
+  const [uploadedFile, setUploadedFile] = useState(null)
+  const [formErrors, setFormErrors] = useState({})
+  const [isCalculating, setIsCalculating] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [results, setResults] = useState(null)
+  const [error, setError] = useState("")
+  const [uploadedPlanUrl, setUploadedPlanUrl] = useState("")
 
   const patternOptions = [
     { value: "grid", label: "Grid Pattern" },
     { value: "brick", label: "Brick Pattern" },
     { value: "herringbone", label: "Herringbone Pattern" },
     { value: "diagonal", label: "Diagonal Pattern" },
-  ];
+  ]
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value } = e.target
     setFormData({
       ...formData,
       [name]: value,
-    });
+    })
 
     // Clear error when user types
     if (formErrors[name]) {
       setFormErrors({
         ...formErrors,
         [name]: "",
-      });
+      })
     }
-  };
+  }
 
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0]
     if (file) {
-      setUploadedFile(file);
+      setUploadedFile(file)
+
+      try {
+        // Create a FormData object to send the file
+        const formData = new FormData()
+        formData.append("planImage", file)
+
+        // Upload the file
+        const response = await axios.post("/api/uploads/plan", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+
+        // Save the file path
+        setUploadedPlanUrl(response.data.filePath)
+      } catch (error) {
+        console.error("Error uploading file:", error)
+        setError("Failed to upload file. Please try again.")
+      }
     }
-  };
+  }
 
   const removeFile = () => {
-    setUploadedFile(null);
-  };
+    setUploadedFile(null)
+    setUploadedPlanUrl("")
+  }
 
   const validateForm = () => {
-    const errors = {};
-    const requiredFields = [
-      "name",
-      "roomLength",
-      "roomWidth",
-      "tileLength",
-      "tileWidth",
-    ];
+    const errors = {}
+    const requiredFields = ["name", "roomLength", "roomWidth", "tileLength", "tileWidth"]
 
     requiredFields.forEach((field) => {
       if (!formData[field]) {
-        errors[field] = `This field is required`;
+        errors[field] = `This field is required`
       }
-    });
+    })
 
-    const numericFields = [
-      "roomLength",
-      "roomWidth",
-      "tileLength",
-      "tileWidth",
-      "spacing",
-    ];
+    const numericFields = ["roomLength", "roomWidth", "tileLength", "tileWidth", "spacing"]
 
     numericFields.forEach((field) => {
       if (formData[field] && isNaN(formData[field])) {
-        errors[field] = "Must be a number";
+        errors[field] = "Must be a number"
       } else if (formData[field] && Number.parseFloat(formData[field]) <= 0) {
-        errors[field] = "Must be greater than 0";
+        errors[field] = "Must be greater than 0"
       }
-    });
+    })
 
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  const calculateTiles = () => {
-    // Convert all measurements to meters for consistency
-    const roomLength = Number.parseFloat(formData.roomLength);
-    const roomWidth = Number.parseFloat(formData.roomWidth);
-    const tileLength = Number.parseFloat(formData.tileLength) / 100; // Convert cm to m
-    const tileWidth = Number.parseFloat(formData.tileWidth) / 100; // Convert cm to m
-    const spacing = Number.parseFloat(formData.spacing) / 1000; // Convert mm to m
-
-    // Calculate room area
-    const roomArea = roomLength * roomWidth;
-
-    // Calculate tile area (including spacing)
-    const tileAreaWithSpacing = (tileLength + spacing) * (tileWidth + spacing);
-
-    // Calculate number of tiles needed
-    const tilesNeeded = Math.ceil(roomArea / tileAreaWithSpacing);
-
-    // Calculate number of tiles along length and width
-    const tilesAlongLength = Math.ceil(roomLength / (tileLength + spacing));
-    const tilesAlongWidth = Math.ceil(roomWidth / (tileWidth + spacing));
-
-    // Calculate number of whole tiles
-    const wholeTiles =
-      Math.floor(tilesAlongLength) * Math.floor(tilesAlongWidth);
-
-    // Calculate number of cut tiles
-    const cutTiles = tilesNeeded - wholeTiles;
-
-    // Calculate edge tiles (tiles that need to be cut along the edges)
-    const edgeTiles = tilesAlongLength * 2 + tilesAlongWidth * 2 - 4;
-
-    // Calculate corner tiles (tiles that need to be cut at the corners)
-    const cornerTiles = 4;
-
-    // Calculate total area of tiles needed (in square meters)
-    const totalTileArea = tilesNeeded * (tileLength * tileWidth);
-
-    // Calculate waste percentage (typically 10% extra for cuts and errors)
-    const wastePercentage = 10;
-    const totalTilesWithWaste = Math.ceil(
-      tilesNeeded * (1 + wastePercentage / 100)
-    );
-
-    return {
-      tilesNeeded,
-      wholeTiles,
-      cutTiles,
-      edgeTiles,
-      cornerTiles,
-      totalTileArea,
-      totalTilesWithWaste,
-      tilesAlongLength,
-      tilesAlongWidth,
-    };
-  };
+    setFormErrors(errors)
+    return Object.keys(errors).length === 0
+  }
 
   const handleCalculate = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
 
     if (!validateForm()) {
-      return;
+      return
     }
 
-    setIsCalculating(true);
+    setIsCalculating(true)
+    setError("")
 
     try {
-      // Perform calculation
-      const calculationResults = calculateTiles();
-      setResults(calculationResults);
+      // Make API call to calculate tiles
+      const response = await axios.post("/api/calculations/calculate", {
+        roomLength: Number.parseFloat(formData.roomLength),
+        roomWidth: Number.parseFloat(formData.roomWidth),
+        tileLength: Number.parseFloat(formData.tileLength),
+        tileWidth: Number.parseFloat(formData.tileWidth),
+        spacing: Number.parseFloat(formData.spacing),
+        pattern: formData.pattern,
+      })
 
-      // In a real app, you would save the calculation to the database
-      // For now, we'll just simulate a delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Simulate API call to save calculation
-      // const response = await axios.post('/api/calculations', {
-      //   ...formData,
-      //   results: calculationResults,
-      //   planImage: uploadedFile ? uploadedFile.name : null,
-      // });
-
-      // navigate(`/layout/${response.data._id}`);
+      setResults(response.data)
     } catch (error) {
-      console.error("Error calculating tiles:", error);
+      console.error("Error calculating tiles:", error)
+      setError("Failed to calculate tiles. Please try again.")
     } finally {
-      setIsCalculating(false);
+      setIsCalculating(false)
     }
-  };
+  }
 
   const handleSaveAndView = async () => {
-    try {
-      // In a real app, you would save the calculation to the database
-      // and then navigate to the layout view
-      // For now, we'll just simulate a delay and navigate
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Simulate API call to save calculation
-      // const response = await axios.post('/api/calculations', {
-      //   ...formData,
-      //   results,
-      //   planImage: uploadedFile ? uploadedFile.name : null,
-      // });
-
-      // For demo purposes, navigate to a mock ID
-      navigate("/layout/123");
-    } catch (error) {
-      console.error("Error saving calculation:", error);
+    if (!results) {
+      return
     }
-  };
+
+    setIsSaving(true)
+    setError("")
+
+    try {
+      // Save the calculation to the database
+      const response = await axios.post("/api/calculations", {
+        name: formData.name,
+        roomLength: Number.parseFloat(formData.roomLength),
+        roomWidth: Number.parseFloat(formData.roomWidth),
+        tileLength: Number.parseFloat(formData.tileLength),
+        tileWidth: Number.parseFloat(formData.tileWidth),
+        spacing: Number.parseFloat(formData.spacing),
+        pattern: formData.pattern,
+        results: results,
+        planImage: uploadedPlanUrl,
+        status: "draft",
+      })
+
+      // Navigate to the layout view
+      navigate(`/layout/${response.data._id}`)
+    } catch (error) {
+      console.error("Error saving calculation:", error)
+      setError("Failed to save calculation. Please try again.")
+    } finally {
+      setIsSaving(false)
+    }
+  }
 
   return (
     <Layout>
       <CalculatorContainer>
         <PageTitle>Tile Calculator</PageTitle>
+
+        {error && <ErrorMessage>{error}</ErrorMessage>}
 
         <Card>
           <form onSubmit={handleCalculate}>
@@ -370,18 +346,11 @@ const TileCalculator = () => {
               <FileUploadContainer>
                 <FileUploadLabel>Room Plan (Optional)</FileUploadLabel>
                 <FileUploadInput>
-                  <input
-                    type="file"
-                    id="roomPlan"
-                    accept="image/*"
-                    onChange={handleFileUpload}
-                  />
+                  <input type="file" id="roomPlan" accept="image/*" onChange={handleFileUpload} />
                   <label htmlFor="roomPlan">
                     <UploadIcon>📁</UploadIcon>
                     <UploadText>Click to upload or drag and drop</UploadText>
-                    <UploadSubtext>
-                      Supports JPG, PNG, PDF (max 10MB)
-                    </UploadSubtext>
+                    <UploadSubtext>Supports JPG, PNG, PDF (max 10MB)</UploadSubtext>
                   </label>
                 </FileUploadInput>
 
@@ -478,7 +447,7 @@ const TileCalculator = () => {
 
             <FormActions>
               <Button type="submit" disabled={isCalculating}>
-                {isCalculating ? "Calculating..." : "Calculate"}
+                {isCalculating ? <Loader /> : "Calculate"}
               </Button>
             </FormActions>
           </form>
@@ -516,6 +485,20 @@ const TileCalculator = () => {
                   <ResultValue>{results.tilesAlongWidth}</ResultValue>
                   <ResultLabel>Tiles Along Width</ResultLabel>
                 </ResultCard>
+
+                {results.estimatedCost && (
+                  <ResultCard>
+                    <ResultValue>${results.estimatedCost}</ResultValue>
+                    <ResultLabel>Estimated Cost</ResultLabel>
+                  </ResultCard>
+                )}
+
+                {results.installationHours && (
+                  <ResultCard>
+                    <ResultValue>{results.installationHours} hrs</ResultValue>
+                    <ResultLabel>Installation Time</ResultLabel>
+                  </ResultCard>
+                )}
               </ResultsGrid>
 
               <FormActions>
@@ -523,14 +506,16 @@ const TileCalculator = () => {
                   Recalculate
                 </Button>
 
-                <Button onClick={handleSaveAndView}>Save & View Layout</Button>
+                <Button onClick={handleSaveAndView} disabled={isSaving}>
+                  {isSaving ? <Loader /> : "Save & View Layout"}
+                </Button>
               </FormActions>
             </ResultsContainer>
           )}
         </Card>
       </CalculatorContainer>
     </Layout>
-  );
-};
+  )
+}
 
-export default TileCalculator;
+export default TileCalculator
